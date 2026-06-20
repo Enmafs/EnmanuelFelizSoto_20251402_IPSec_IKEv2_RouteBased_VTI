@@ -1,4 +1,4 @@
-# 🔐 Lab 05 — IPSec IKEv2 — Route-Based (VTI)
+# 🔐 Lab 03 — IPSec IKEv2 — Route-Based (VTI)
 
 **Estudiante:** Enmanuel Feliz Soto | **Matrícula:** 2025-1402  
 **Institución:** Instituto Tecnológico de Las Américas (ITLA)  
@@ -9,15 +9,15 @@
 
 ## 📋 Descripción
 
-VTI con IKEv2. Combina la flexibilidad de rutas del VTI con el protocolo de intercambio de claves más moderno.
+VPN basada en rutas usando VTI. Más flexible que Policy-Based, permite routing dinámico sobre el túnel.
 
 | Campo | Valor |
 |-------|-------|
 | **Tipo de VPN** | Site-to-Site |
 | **Protocolo** | IKEv2 + IPSec ESP-AES256-SHA256 |
-| **Mecanismo** | Static VTI + IKEv2 Keyring/Profile |
+| **Mecanismo** | Static VTI (Virtual Tunnel Interface) + Rutas Estáticas |
 | **Routing** | Rutas estáticas apuntando a Tunnel0 |
-| **Pre-shared Key** | `Cisco2025-1402-IKEV2-VTI!` |
+| **Pre-shared Key** | `Cisco2025-1402-VTI!` |
 
 ---
 
@@ -25,30 +25,34 @@ VTI con IKEv2. Combina la flexibilidad de rutas del VTI con el protocolo de inte
 
 > 📸 **[INSERTAR CAPTURA DE TOPOLOGÍA AQUÍ]**
 
-<!-- Coloca aquí el screenshot de PNetLab con la topología del Lab 05 -->
+<!-- Coloca aquí el screenshot de PNetLab con la topología del Lab 02 -->
 
 **Entorno:** PNetLab — Cisco IOL  
-**Peers:** R1-S1 (20.25.5.2) ↔ R4-S2 (20.25.5.6)
+**Peers:** R1-S1 (20.25.2.2) ↔ R4-S2 (20.25.2.6)
 
 ### Tabla de Direccionamiento
 
-| Router | Rol | IP WAN | Interfaz WAN | IP LAN | Interfaz LAN |
-|--------|-----|--------|--------------|--------|--------------|
-| R1-S1 | Peer 1 / Iniciador | 20.25.5.2 | Ethernet0/0 | 10.14.14.0.1/24 | **Ethernet0/3** |
-| R4-S2 | Peer 2 / Respondedor | 20.25.5.6 | Ethernet0/1 | 10.14.24.0.1/24 | Ethernet0/0 |
+| **Router** | **Rol** | **IP WAN** | **Interfaz WAN** | **IP LAN** | **Interfaz LAN** | **IP VPN** | **Interfaz VPN** |
+|------------|---------|------------|------------------|------------|------------------|------------|------------------|
+| R2    | Peer 1   / Iniciador | 20.25.2.6 | Ethernet0/0 | 30.30.30.1/24 | Ethernet0/1 | 14.2.10.1 | Tunnel0 |
+| R5    | Peer 2 / Respondedor | 20.25.1.10| Ethernet0/0 | -- | Ethernet0/1 | 14.2.10.2 | Tunnel0 |
+| R5    | -- | -- | -- | 10.10.10.1/24 | Ethernet0/1.10 | -- | -- |
+| R5    | -- | -- | -- | 20.20.20.1/24 | Ethernet0/1.20 | -- | -- |
+
 
 ### ISP
 
 | Interfaz ISP | IP | Descripción |
 |-------------|-----|-------------|
-| Ethernet0/0 | 20.25.5.1/30 | Link to R1-S1 |
-| Ethernet0/1 | 20.25.5.5/30 | Link to R4-S2 |
+| Ethernet0/0 | 20.25.1.1/30 | Link to R1-S1 |
+| Ethernet0/1 | 20.25.1.5/30 | Link to R4-S2 |
+| Ethernet0/2 | 20.25.1.9/30 | Link to R5    |
 
 ### Dirección Túnel
 | Endpoint | IP Tunnel |
 |----------|-----------|
-| R1-S1 Tunnel0 | 14.0.2.9/30/30 |
-| R4-S2 Tunnel0 | 14.0.2.10/30/30 |
+| R1-S1 Tunnel0 | 14.2.10.1/30 |
+| R4-S2 Tunnel0 | 14.2.10.2/30 |
 
 ---
 
@@ -76,13 +80,13 @@ El script completo de configuración se encuentra en:
 ### 1. Cargar configuración en PNetLab
 ```
 # Aplicar configuración en cada dispositivo en el orden:
-# 1. ISP → 2. R1-S1 → 3. R4-S2 → 4. R2/Server
+# 1. ISP → 2. R1-S1 → 3. R2 → 4. R5
 ```
 
 ### 2. Verificar la VPN
 
 ```
-show crypto ikev2 sa
+show crypto isakmp sa
 ```
 ```
 show crypto ipsec sa
@@ -93,14 +97,14 @@ show interface Tunnel0
 
 ### 3. Prueba de conectividad
 ```
-ping 10.14.24.10 source 10.14.14.2
+ping 14.2.10.2 source 14.2.10.1
 ```
 
 ---
 
 ## 📸 Capturas de Verificación
 
-> 📸 **[INSERTAR CAPTURA: show crypto ikev2 sa]**
+> 📸 **[INSERTAR CAPTURA: show crypto isakmp sa]**
 
 <!-- Captura mostrando el estado QM_IDLE / ESTABLISHED -->
 
@@ -110,7 +114,7 @@ ping 10.14.24.10 source 10.14.14.2
 
 > 📸 **[INSERTAR CAPTURA: ping exitoso]**
 
-<!-- Captura del ping source 10.14.14.0/24 -->
+<!-- Captura del ping source 10.14.11.0/24 -->
 
 ---
 
@@ -129,8 +133,8 @@ ping 10.14.24.10 source 10.14.14.2
 | Recurso | Enlace |
 |---------|--------|
 | Repositorio Principal | [Enmafs/NetSec](https://github.com/Enmafs/NetSec) |
-| Script de configuración | [`Lab05_IPSec_IKEv2_RouteBased_VTI.txt`](./EnmanuelFelizSoto_2025-1402_IPSec_IKEv2_RouteBased_VTI_P3.txt) |
-| Video demostración | 🎬 **[PENDIENTE — agregar link de YouTube]** |
+| Script de configuración | [`EnmanuelFelizSoto_2025-1402_IPSec_IKEv2_RouteBased_VTI_P3.txt`](./EnmanuelFelizSoto_2025-1402_IPSec_IKEv2_RouteBased_VTI_P3.txt) |
+| Video demostración | 🎬 **Pendiente** |
 
 ---
 
