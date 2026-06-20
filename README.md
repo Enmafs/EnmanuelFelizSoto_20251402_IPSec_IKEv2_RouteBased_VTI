@@ -55,7 +55,7 @@ VTI con IKEv2. Combina la flexibilidad de rutas del VTI con el protocolo de inte
 ## ⚙️ Configuración
 
 El script completo de configuración se encuentra en:  
-📄 [`Lab05_IPSec_IKEv2_RouteBased_VTI.txt`](./Lab05_IPSec_IKEv2_RouteBased_VTI.txt)
+📄 [`EnmanuelFelizSoto_2025-1402_IPSec_IKEv2_RouteBased_VTI_P3.txt`](./EnmanuelFelizSoto_2025-1402_IPSec_IKEv2_RouteBased_VTI_P3.txt)
 
 ### Parámetros IKE/IPSec
 
