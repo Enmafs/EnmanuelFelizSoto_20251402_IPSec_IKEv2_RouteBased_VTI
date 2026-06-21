@@ -175,9 +175,36 @@ ip route 30.30.30.0 255.255.255.0 Tunnel0
 !
 end
 
+! ---- SW-R5 ----
+enable
+!
+configure termina
+ no ip domain lookup
+ hostname SW-R5
+! 
+vlan 10
+ name VLAN10
+vlan 20
+ name VLAN20
+!
+int e1/0
+switchport mode access
+ switchport access vlan 10
+!
+int e2/0
+ switchport mode access
+ switchport access vlan 20
+!
+int e0/0
+switchport trunk encapsulation dot1q
+switchport mode trunk
+!
+end
+
 ! ---- R1 ----
 enable
 configure terminal
+no ip domain lookup
 hostname R1
 !
 interface Ethernet0/0
